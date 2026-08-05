@@ -1,0 +1,21 @@
+groups:
+  - name: service_availability
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"video-.*-service|notification-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Servico {{ $labels.job }} esta fora do ar"
+          description: "O servico {{ $labels.job }} nao responde ha mais de 1 minuto. Verifique o container imediatamente."
+
+      - alert: ServiceRestarting
+        expr: changes(process_start_time_seconds{job=~"video-.*-service|notification-service"}[10m]) > 2
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Servico {{ $labels.job }} reiniciou multiplas vezes"
+          description: "O servico reiniciou mais de 2 vezes nos ultimos 10 minutos — possivel crash loop."

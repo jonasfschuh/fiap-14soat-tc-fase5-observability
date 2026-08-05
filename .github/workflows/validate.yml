@@ -1,0 +1,69 @@
+name: Validar configuracoes de Observabilidade
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-yaml:
+    name: Validar YAMLs
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar yamllint
+        run: pip install yamllint
+
+      - name: Configurar yamllint
+        run: |
+          cat > .yamllint.yml << 'EOF'
+          extends: default
+          rules:
+            line-length:
+              max: 200
+            truthy:
+              allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+          EOF
+
+      - name: Validar YAMLs do Prometheus
+        run: yamllint -c .yamllint.yml prometheus/
+
+      - name: Validar YAMLs do Grafana provisioning
+        run: yamllint -c .yamllint.yml grafana/provisioning/
+
+      - name: Validar docker-compose
+        run: docker compose config --quiet
+
+      - name: Validar JSON dos dashboards Grafana
+        run: |
+          for f in grafana/dashboards/*.json; do
+            echo "Validando $f..."
+            python3 -c "import json; json.load(open('$f'))" && echo "  OK"
+          done
+
+  validate-prometheus-rules:
+    name: Validar Regras Prometheus
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar promtool
+        run: |
+          PROM_VERSION="2.51.0"
+          wget -q "https://github.com/prometheus/prometheus/releases/download/v${PROM_VERSION}/prometheus-${PROM_VERSION}.linux-amd64.tar.gz"
+          tar xzf "prometheus-${PROM_VERSION}.linux-amd64.tar.gz"
+          sudo mv "prometheus-${PROM_VERSION}.linux-amd64/promtool" /usr/local/bin/
+
+      - name: Verificar regras de alerta
+        run: promtool check rules prometheus/rules/*.yml

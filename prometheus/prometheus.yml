@@ -1,0 +1,60 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "rules/service_alerts.yml"
+  - "rules/http_alerts.yml"
+  - "rules/processing_alerts.yml"
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'video-upload-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['video-upload-api:8083']
+    relabel_configs:
+      - target_label: service
+        replacement: 'video-upload'
+
+  - job_name: 'video-processing-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['video-processing-api:8084']
+    relabel_configs:
+      - target_label: service
+        replacement: 'video-processing'
+
+  - job_name: 'video-status-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['video-status-api:8085']
+    relabel_configs:
+      - target_label: service
+        replacement: 'video-status'
+
+  - job_name: 'video-download-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['video-download-api:8086']
+    relabel_configs:
+      - target_label: service
+        replacement: 'video-download'
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['notification-api:8087']
+    relabel_configs:
+      - target_label: service
+        replacement: 'notification'

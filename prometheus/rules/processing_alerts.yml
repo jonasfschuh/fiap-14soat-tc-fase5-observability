@@ -1,0 +1,38 @@
+groups:
+  - name: video_processing
+    rules:
+      - alert: VideoProcessingErrors
+        expr: |
+          rate(http_server_requests_seconds_count{
+            job="video-processing-service", status=~"5.."
+          }[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta taxa de falhas no processamento de video"
+          description: "O video-processing-service esta falhando com alta frequencia. Verifique os logs."
+
+      - alert: NotificationEmailFailures
+        expr: |
+          rate(http_server_requests_seconds_count{
+            job="notification-service", status=~"5.."
+          }[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Falhas no envio de notificacoes"
+          description: "O notification-service esta com falhas. E-mails podem nao estar sendo entregues."
+
+      - alert: HighGcPauseTime
+        expr: |
+          rate(jvm_gc_pause_seconds_sum[5m])
+          /
+          rate(jvm_gc_pause_seconds_count[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pauses de GC elevadas em {{ $labels.job }}"
+          description: "O GC esta pausando a JVM por mais de 500ms em media no servico {{ $labels.job }}."

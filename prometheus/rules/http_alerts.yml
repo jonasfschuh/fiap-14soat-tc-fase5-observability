@@ -1,0 +1,38 @@
+groups:
+  - name: http_performance
+    rules:
+      - alert: HighErrorRate5xx
+        expr: |
+          (
+            rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+            /
+            rate(http_server_requests_seconds_count[5m])
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta taxa de erros 5xx em {{ $labels.job }}"
+          description: "Taxa de erros HTTP 5xx acima de 5% por 5 minutos no servico {{ $labels.job }}."
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_server_requests_seconds_bucket[5m])
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latencia p95 alta em {{ $labels.job }}"
+          description: "Latencia p95 acima de 2 segundos por 5 minutos no servico {{ $labels.job }}."
+
+      - alert: HighJvmHeapUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de heap JVM alto em {{ $labels.job }}"
+          description: "Heap JVM acima de 85% de uso no servico {{ $labels.job }}."
