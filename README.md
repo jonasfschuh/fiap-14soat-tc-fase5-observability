@@ -73,9 +73,9 @@ Este projeto entrega:
 | Serviço | Porta | Container name | Endpoint de métricas |
 |---|---|---|---|
 | `video-upload-service` | `8083` | `video-upload-api` | `/actuator/prometheus` |
-| `video-processing-service` | `8084` | `video-processing-api` | `/actuator/prometheus` |
-| `video-status-service` | `8085` | `video-status-api` | `/actuator/prometheus` |
-| `video-download-service` | `8086` | `video-download-api` | `/actuator/prometheus` |
+| `video-status-service` | `8084` | `video-status-api` | `/actuator/prometheus` |
+| `video-download-service` | `8085` | `video-download-api` | `/actuator/prometheus` |
+| `video-processing-service` | `8086` | `video-processing-api` | `/actuator/prometheus` |
 | `notification-service` | `8087` | `notification-api` | `/actuator/prometheus` |
 
 Todos os serviços:
@@ -527,11 +527,11 @@ O Prometheus realiza **scrape** periódico no endpoint `/actuator/prometheus` de
 | Job Prometheus | Target |
 |---|---|
 | `prometheus` | `localhost:9090` |
-| `video-upload-service` | `video-upload-api:8083` |
-| `video-processing-service` | `video-processing-api:8084` |
-| `video-status-service` | `video-status-api:8085` |
-| `video-download-service` | `video-download-api:8086` |
-| `notification-service` | `notification-api:8087` |
+| `video-upload-service` | `localhost:8083` |
+| `video-status-service` | `localhost:8084` |
+| `video-download-service` | `localhost:8085` |
+| `video-processing-service` | `localhost:8086` |
+| `notification-service` | `localhost:8087` |
 
 ### Métricas coletadas automaticamente
 
