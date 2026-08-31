@@ -14,11 +14,16 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  # Cada job inclui dois targets:
+  #   1. container_name da rede Docker (quando o serviço sobe via docker compose)
+  #   2. host.docker.internal (quando o serviço está rodando localmente na IDE)
+  # O Prometheus coleta de qualquer um que estiver UP — os dois podem coexistir.
+
   - job_name: 'video-upload-service'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
-      - targets: ['video-upload-api:8083']
+      - targets: ['video-upload-api:8083', 'host.docker.internal:8083']
     relabel_configs:
       - target_label: service
         replacement: 'video-upload'
@@ -27,7 +32,7 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
-      - targets: ['video-processing-api:8084']
+      - targets: ['video-processing-api:8084', 'host.docker.internal:8084']
     relabel_configs:
       - target_label: service
         replacement: 'video-processing'
@@ -36,7 +41,7 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
-      - targets: ['video-status-api:8085']
+      - targets: ['video-status-api:8085', 'host.docker.internal:8085']
     relabel_configs:
       - target_label: service
         replacement: 'video-status'
@@ -45,7 +50,7 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
-      - targets: ['video-download-api:8086']
+      - targets: ['video-download-api:8086', 'host.docker.internal:8086']
     relabel_configs:
       - target_label: service
         replacement: 'video-download'
@@ -54,7 +59,7 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
-      - targets: ['notification-api:8087']
+      - targets: ['notification-api:8087', 'host.docker.internal:8087']
     relabel_configs:
       - target_label: service
         replacement: 'notification'
