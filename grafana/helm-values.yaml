@@ -1,0 +1,46 @@
+# Helm values para deploy do Grafana no Kubernetes (namespace: fiapx)
+# Uso: helm upgrade grafana grafana/grafana -n fiapx -f grafana/helm-values.yaml
+
+adminPassword: admin
+
+service:
+  type: LoadBalancer
+  port: 3000
+
+persistence:
+  enabled: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus-server.fiapx.svc.cluster.local:9090
+        isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: POST
+          timeInterval: "15s"
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: fiapx-dashboards
+        orgId: 1
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards/fiapx-dashboards
+
+dashboardsConfigMaps:
+  fiapx-dashboards: grafana-dashboards
+
+grafana.ini:
+  dashboards:
+    default_home_dashboard_path: /var/lib/grafana/dashboards/fiapx-dashboards/01-overview.json

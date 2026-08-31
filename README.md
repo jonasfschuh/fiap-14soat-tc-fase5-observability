@@ -5,10 +5,10 @@
 ![New Relic](https://img.shields.io/badge/New_Relic-%231CE783.svg?style=for-the-badge&logo=newrelic&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![Docker Compose](https://img.shields.io/badge/Docker_Compose-2.x-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazonwebservices&logoColor=white)
-![Amazon CloudWatch](https://img.shields.io/badge/Amazon_CloudWatch-%23FF9900.svg?style=for-the-badge&logo=amazoncloudwatch&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-%23326CE5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-%230F1689.svg?style=for-the-badge&logo=helm&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Hexagonal Architecture](https://img.shields.io/badge/Hexagonal-Architecture-7B2D8B?style=for-the-badge)
 ![Event-Driven](https://img.shields.io/badge/Event--Driven-FF6D00?style=for-the-badge)
 
@@ -21,12 +21,12 @@
 - [🔭 O que é Observabilidade](#-o-que-é-observabilidade)
 - [🏗️ Arquitetura de Observabilidade](#️-arquitetura-de-observabilidade)
 - [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
-- [🔍 New Relic — Observabilidade em Produção (AWS)](#-new-relic--observabilidade-em-produção-aws)
+- [🔍 New Relic — Observabilidade Complementar (Opcional)](#-new-relic--observabilidade-complementar-opcional)
 - [📊 Prometheus + Grafana — Observabilidade Local](#-prometheus--grafana--observabilidade-local)
 - [📈 Dashboards Grafana](#-dashboards-grafana)
 - [🚨 Alertas Configurados](#-alertas-configurados)
 - [🔒 Proteção da Branch main](#-proteção-da-branch-main)
-- [🚀 Execução Local](#-execução-local)
+- [🚀 Execução](#-execução)
 - [🔗 Repositórios Relacionados](#-repositórios-relacionados)
 
 ---
@@ -45,26 +45,27 @@
 
 Este repositório centraliza toda a configuração de **observabilidade** da plataforma **FIAP X**. Não contém código Java — é composto por arquivos de configuração YAML/JSON e Docker Compose.
 
-> ⚠️ **Este repositório não tem código Java.** Ele contém apenas configurações de monitoramento que os demais microserviços consomem. Para subir o ambiente local de observabilidade, os microserviços já devem estar rodando conectados à `fiap-network`.
+> ⚠️ **Este repositório não tem código Java.** Ele contém apenas configurações de monitoramento que os demais microserviços consomem. A stack de observabilidade pode ser executada de duas formas: via **Docker Compose** (desenvolvimento local sem cluster) ou via **cluster Kubernetes local** (Docker Desktop), onde é provisionada automaticamente pelo repositório [fiap-14soat-tc-fase5-iac-terraform](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform).
 
 ### Responsabilidades deste repositório
 
 | Ferramenta | Ambiente | Função |
 |---|---|---|
-| **New Relic APM** | Local + AWS | APM, distributed tracing, logs, alertas (agente já instalado em todos os serviços) |
-| **Prometheus** | Local (Docker) | Coleta de métricas via `/actuator/prometheus` dos 5 serviços |
-| **Grafana** | Local (Docker) | Dashboards visuais, 6 dashboards pré-configurados e auto-provisionados |
+| **New Relic APM** | Opcional | APM, distributed tracing, logs, alertas (agente já instalado em todos os serviços) |
+| **Prometheus** | Local (Docker Compose) + K8s cluster local | Coleta de métricas via `/actuator/prometheus` dos 5 serviços |
+| **Grafana** | Local (Docker Compose) + K8s cluster local | Dashboards visuais, 6 dashboards pré-configurados e auto-provisionados |
 | **Spring Boot Actuator** | Todos os serviços | Expõe `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus` |
 
 ### Escopo funcional
 
 Este projeto entrega:
 
-- `docker-compose.yml` para subir **Prometheus + Grafana**
+- `docker-compose.yml` para subir **Prometheus + Grafana** (modo Docker Compose)
+- configuração Helm para subir **Prometheus + Grafana** no K8s local (via repositório IAC Terraform)
 - regras Prometheus versionadas em Git
 - dashboards Grafana como código
-- documentação de uso do **New Relic**
-- scripts `.bat` para subir e parar o stack local
+- documentação de uso do **New Relic** (opcional)
+- scripts `.bat` para subir e parar o stack local via Docker Compose
 - workflow GitHub Actions para validar YAMLs, JSONs e regras de alerta
 
 ### Microserviços monitorados
@@ -123,7 +124,7 @@ fiap-14soat-tc-fase5-observability/
     └── validate.yml                ← Validação CI
 ```
 
-### Como funciona localmente
+### Como funciona no modo Docker Compose
 
 ```text
 ┌───────────────────────────────────────────────────────────────┐
@@ -144,6 +145,30 @@ fiap-14soat-tc-fase5-observability/
 ```
 
 **Pré-requisito:** cada microserviço já expõe `/actuator/prometheus` via Spring Boot Actuator + Micrometer (configurado em todos os serviços com `management.endpoints.web.exposure.include: health,info,metrics,prometheus`).
+
+### Como funciona no modo Kubernetes (cluster local Docker Desktop)
+
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│  namespace: fiapx  (Kubernetes — Docker Desktop)                     │
+│                                                                      │
+│  ┌──────────────┐   scrape /actuator/prometheus                     │
+│  │  Prometheus  │ ◄────────────────────────────────────────────┐   │
+│  │  (Helm)      │                                               │   │
+│  │  :9090       │         ┌──────────────────────────┐         │   │
+│  └──────┬───────┘         │ video-upload-service:8083│─────────┘   │
+│         │                 │ video-processing-service  │─────────┐   │
+│         │ datasource      │ video-status-service:8085 │         │   │
+│  ┌──────▼───────┐         │ video-download-service    │─────────┘   │
+│  │   Grafana    │         │ notification-service:8087 │─────────┐   │
+│  │  (Helm)      │         └──────────────────────────┘         │   │
+│  │  :3000       │                                               │   │
+│  └──────────────┘                                               │   │
+│                                                                 │   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+O provisionamento no K8s é feito automaticamente pelo script `setup-cluster.sh` do repositório [fiap-14soat-tc-fase5-iac-terraform](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform), que instala Prometheus e Grafana via Helm com os scrape configs e alertas pré-configurados.
 
 **Portas locais:**
 
@@ -207,7 +232,7 @@ Sem métricas, traces e logs correlacionados, fica difícil responder perguntas 
 
 ## 🏗️ Arquitetura de Observabilidade
 
-### Arquitetura local — Prometheus + Grafana
+### Arquitetura local — Prometheus + Grafana (Docker Compose)
 
 ```text
 ┌───────────────────────────────────────────────────────────────┐
@@ -227,13 +252,35 @@ Sem métricas, traces e logs correlacionados, fica difícil responder perguntas 
 └───────────────────────────────────────────────────────────┘
 ```
 
-### Arquitetura AWS — New Relic
+### Arquitetura K8s — Prometheus + Grafana (cluster local Docker Desktop)
 
 ```text
-[Cada Serviço em ECS/EKS]
+┌─────────────────────────────────────────────────────────────────────┐
+│  namespace: fiapx  (Kubernetes — Docker Desktop)                     │
+│                                                                      │
+│  ┌──────────────┐   scrape /actuator/prometheus                     │
+│  │  Prometheus  │ ◄────────────────────────────────────────────┐   │
+│  │  Helm chart  │                                               │   │
+│  │  :9090       │         ┌──────────────────────────┐         │   │
+│  └──────┬───────┘         │ video-upload-service:8083│─────────┘   │
+│         │                 │ video-processing-service  │─────────┐   │
+│         │ datasource      │ video-status-service:8085 │         │   │
+│  ┌──────▼───────┐         │ video-download-service    │─────────┘   │
+│  │   Grafana    │         │ notification-service:8087 │─────────┐   │
+│  │  Helm chart  │         └──────────────────────────┘         │   │
+│  │  :3000       │                                               │   │
+│  └──────────────┘                                               │   │
+│  Provisionado via: fiap-14soat-tc-fase5-iac-terraform           │   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### New Relic — Observabilidade complementar (opcional)
+
+```text
+[Cada Serviço no cluster K8s ou Docker]
     │  New Relic Java Agent (javaagent:/app/newrelic/newrelic.jar)
     │  - Instrumenta Spring Boot automaticamente
-    │  - Captura: HTTP transactions, JVM, SQS calls, DB queries
+    │  - Captura: HTTP transactions, JVM, RabbitMQ calls, DB queries
     ▼
 [New Relic APM Platform]
     ├── APM Dashboard (throughput, error rate, response time, Apdex)
@@ -247,9 +294,9 @@ Sem métricas, traces e logs correlacionados, fica difícil responder perguntas 
 
 | Origem | Ferramenta | Destino | Resultado |
 |---|---|---|---|
-| `/actuator/prometheus` dos serviços | Prometheus | TSDB local | métricas para consultas PromQL |
+| `/actuator/prometheus` dos serviços | Prometheus (Docker Compose ou K8s Helm) | TSDB local | métricas para consultas PromQL |
 | Prometheus | Grafana | Dashboards provisionados | visualização em tempo real |
-| JVM + Spring Boot + integrações | New Relic Java Agent | New Relic SaaS | APM, tracing, logs e alertas |
+| JVM + Spring Boot + integrações | New Relic Java Agent (opcional) | New Relic SaaS | APM, tracing, logs e alertas |
 
 ### Estrutura do repositório
 
@@ -264,15 +311,16 @@ fiap-14soat-tc-fase5-observability/
 │       └── processing_alerts.yml
 ├── grafana/
 │   ├── provisioning/
-│   │   ├── datasources/prometheus.yml
-│   │   └── dashboards/dashboards.yml
-│   └── dashboards/
-│       ├── 01-overview.json
-│       ├── 02-video-upload.json
-│       ├── 03-video-processing.json
-│       ├── 04-video-status.json
-│       ├── 05-video-download.json
-│       └── 06-notification.json
+│   │   ├── datasources/prometheus.yml  ← Datasource com uid fixo (Docker Compose)
+│   │   └── dashboards/dashboards.yml  ← Provider de dashboards (Docker Compose)
+│   ├── dashboards/
+│   │   ├── 01-overview.json
+│   │   ├── 02-video-upload.json
+│   │   ├── 03-video-processing.json
+│   │   ├── 04-video-status.json
+│   │   ├── 05-video-download.json
+│   │   └── 06-notification.json
+│   └── helm-values.yaml               ← Valores Helm para deploy K8s (namespace fiapx)
 ├── newrelic/
 │   └── README-newrelic.md
 └── .github/workflows/validate.yml
@@ -285,6 +333,8 @@ fiap-14soat-tc-fase5-observability/
 - `fiap-network` é externa, pois já existe no ecossistema criado a partir do upload-service
 - volumes persistem histórico de métricas e dashboards
 
+> **No modo K8s**, o Docker Compose não é utilizado. O Prometheus e Grafana são instalados como Helm releases no namespace `fiapx` pelo repositório IAC Terraform.
+
 ---
 
 ## 🛠️ Tecnologias Utilizadas
@@ -293,10 +343,13 @@ fiap-14soat-tc-fase5-observability/
 |---|---|---|
 | Prometheus | 2.51.0 | Coleta e armazenamento de métricas |
 | Grafana | 10.4.0 | Visualização e dashboards |
-| New Relic APM | 8.18.0 (Java Agent) | APM, tracing, logs, alertas em produção |
+| New Relic APM | 8.18.0 (Java Agent) | APM, tracing, logs, alertas (opcional) |
 | Spring Boot Actuator | 3.4.5 | Expõe /actuator/prometheus em cada serviço |
-| Docker | 24.x | Containerização de Prometheus e Grafana |
-| Docker Compose | 2.x | Orquestração local |
+| Docker | 24.x | Containerização de Prometheus e Grafana (modo Docker Compose) |
+| Docker Compose | 2.x | Orquestração local sem cluster |
+| Kubernetes | 1.29+ (Docker Desktop) | Cluster local onde a stack é provisionada via Helm |
+| Terraform | 1.x | Provisionamento da infraestrutura no cluster K8s local |
+| Helm | 3.x | Instalação de Prometheus e Grafana no K8s |
 | promtool | 2.51.0 | Validação de regras Prometheus no CI |
 | yamllint | Latest | Validação de YAMLs no CI |
 | GitHub Actions | Latest | CI/CD |
@@ -304,20 +357,18 @@ fiap-14soat-tc-fase5-observability/
 ### Complementos importantes
 
 - **Micrometer** já está presente nos microserviços para exportar métricas Prometheus
-- **AWS / CloudWatch** complementam o cenário em produção
-- **Kubernetes / ECS / EKS** são ambientes-alvo de produção monitorados via New Relic
+- **Kubernetes (Docker Desktop)** é o ambiente principal de execução do cluster local
+- **New Relic** é opcional e pode ser ativado fornecendo a license key via `.env`
 
 ---
 
-## 🔍 New Relic — Observabilidade em Produção (AWS)
+## 🔍 New Relic — Observabilidade Complementar (Opcional)
 
 Esta seção replica o guia operacional presente em [`newrelic/README-newrelic.md`](newrelic/README-newrelic.md).
 
+O New Relic é uma ferramenta **opcional** de APM complementar. Todos os cinco microserviços Java Spring Boot da plataforma FIAP X já possuem o **New Relic Java Agent** instalado e configurado com `newrelic.yml`. Assim que a variável `NEW_RELIC_LICENSE_KEY` apontar para uma conta válida, o agente passa a enviar telemetria automaticamente para a plataforma — seja em ambiente local ou em qualquer outro ambiente.
+
 ### 1. O que o New Relic já monitora
-
-Todos os cinco microserviços Java Spring Boot da plataforma FIAP X já possuem o **New Relic Java Agent** instalado e configurado com `newrelic.yml`. Assim que a variável `NEW_RELIC_LICENSE_KEY` apontar para uma conta válida, o agente passa a enviar telemetria automaticamente para a plataforma.
-
-#### Itens monitorados automaticamente
 
 | Recurso | O que o New Relic coleta |
 |---|---|
@@ -326,17 +377,17 @@ Todos os cinco microserviços Java Spring Boot da plataforma FIAP X já possuem 
 | **Logs in Context** | correlação de logs com traces e transações do APM |
 | **JVM** | heap, non-heap, garbage collection, threads, classes carregadas |
 | **HTTP / Spring Boot** | endpoints, método HTTP, status code, duração, erros 4xx/5xx |
-| **SQS / Mensageria** | publicação e consumo de mensagens, tempo gasto nas integrações instrumentadas |
+| **RabbitMQ / Mensageria** | publicação e consumo de mensagens, tempo gasto nas integrações instrumentadas |
 
 #### Cobertura por serviço
 
-| Serviço | App name no New Relic | Cobertura principal |
-|---|---|---|
-| `video-upload-service` | `video-upload-ms` | upload HTTP, persistência, envio para SQS `video-uploaded` |
-| `video-processing-service` | `video-processing-ms` | consumo da fila, execução do ffmpeg, geração de ZIP, integrações S3/SQS |
-| `video-status-service` | `video-status-ms` | consultas e atualização de status por vídeo/usuário |
-| `video-download-service` | `video-download-ms` | geração de presigned URL, validações e respostas HTTP |
-| `notification-service` | `notification-ms` | consumo de eventos, processamento e envio de e-mails |
+| Serviço | App name no New Relic | Cobertura principal                                                               |
+|---|---|-----------------------------------------------------------------------------------|
+| `video-upload-service` | `video-upload-ms` | upload HTTP, persistência, envio para RabbitMQ `video-uploaded`                   |
+| `video-processing-service` | `video-processing-ms` | consumo da fila, execução do ffmpeg, geração de ZIP, integrações storage/RabbitMQ |
+| `video-status-service` | `video-status-ms` | consultas e atualização de status por vídeo/usuário                               |
+| `video-download-service` | `video-download-ms` | geração de presigned URL, validações e respostas HTTP                             |
+| `notification-service` | `notification-ms` | consumo de eventos, processamento e envio de e-mails                              |
 
 ### 2. Como criar conta gratuita
 
@@ -418,7 +469,7 @@ common: &default_settings
 Fluxo completo rastreável:
 
 ```text
-POST /api/videos → SQS:video-uploaded → ffmpeg → S3 → SQS:video-events → status update → email
+POST /api/videos → RabbitMQ:video-uploaded → ffmpeg → storage → RabbitMQ:video-events → status update → email
 ```
 
 Leitura recomendada do trace:
@@ -426,10 +477,10 @@ Leitura recomendada do trace:
 | Etapa | Evidência esperada |
 |---|---|
 | `POST /api/videos` | transação web no `video-upload-ms` |
-| `SQS:video-uploaded` | salto assíncrono entre upload e processamento |
+| `RabbitMQ:video-uploaded` | salto assíncrono entre upload e processamento |
 | `ffmpeg` | aumento de tempo e uso de recursos no `video-processing-ms` |
-| `S3` | integração externa instrumentada |
-| `SQS:video-events` | publicação/consumo para status e notificações |
+| `storage` | acesso ao volume compartilhado de vídeos |
+| `RabbitMQ:video-events` | publicação/consumo para status e notificações |
 | `status update` | transação do `video-status-ms` |
 | `email` | operação final do `notification-ms` |
 
@@ -454,14 +505,14 @@ Passos:
 
 | Plataforma | Ambiente principal | Objetivo |
 |---|---|---|
-| **New Relic** | Produção AWS | APM completo, distributed tracing, logs, visão gerenciada e alertas corporativos |
-| **Prometheus + Grafana** | Desenvolvimento local via Docker | coleta local de métricas técnicas, dashboards versionados e troubleshooting rápido |
+| **New Relic** | Uso complementar (opcional) | APM completo, distributed tracing, logs, visão gerenciada e alertas |
+| **Prometheus + Grafana** | Local (Docker Compose) + K8s cluster local | coleta local de métricas técnicas, dashboards versionados e troubleshooting rápido |
 
 #### Quando usar cada um
 
-- **Produção AWS:** priorize **New Relic**
-- **Ambiente local Docker:** priorize **Prometheus + Grafana**
-- **Projeto FIAP X:** use ambos de forma complementar
+- **Cluster K8s local (Docker Desktop):** priorize **Prometheus + Grafana** — já provisionado automaticamente pelo IAC Terraform
+- **Docker Compose (sem cluster):** use **Prometheus + Grafana** via `docker-start-local-dev.bat`
+- **New Relic:** opcional para APM avançado, distributed tracing e correlação de logs
 
 ---
 
@@ -519,9 +570,35 @@ O Prometheus realiza **scrape** periódico no endpoint `/actuator/prometheus` de
 
 O diretório `grafana/provisioning` garante:
 
-- datasource Prometheus criado automaticamente
+- datasource Prometheus criado automaticamente com `uid: prometheus`
 - dashboards carregados sem configuração manual
 - dashboard `01-overview.json` como homepage padrão
+
+#### Deploy no Kubernetes (modo K8s)
+
+Para provisionar os dashboards no Grafana instalado via Helm no namespace `fiapx`:
+
+```bash
+# 1. Criar o ConfigMap com todos os dashboards JSON
+kubectl create configmap grafana-dashboards \
+  --from-file=grafana/dashboards/01-overview.json \
+  --from-file=grafana/dashboards/02-video-upload.json \
+  --from-file=grafana/dashboards/03-video-processing.json \
+  --from-file=grafana/dashboards/04-video-status.json \
+  --from-file=grafana/dashboards/05-video-download.json \
+  --from-file=grafana/dashboards/06-notification.json \
+  -n fiapx
+
+# 2. Atualizar o Helm release com os valores de provisioning
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm upgrade grafana grafana/grafana -n fiapx -f grafana/helm-values.yaml
+```
+
+O arquivo `grafana/helm-values.yaml` configura automaticamente:
+- datasource Prometheus com `uid: prometheus`
+- provider de dashboards apontando para o ConfigMap `grafana-dashboards`
+- homepage padrão: `01-overview.json`
 
 ---
 
@@ -750,20 +827,68 @@ As regras abaixo seguem o padrão adotado nos demais repositórios do projeto.
 
 ---
 
-## 🚀 Execução Local
+## 🚀 Execução
 
-### ⚙️ Pré-requisitos
+A stack de observabilidade pode ser executada de dois modos:
+
+---
+
+### 🅰️ Modo K8s — Cluster local Docker Desktop *(recomendado)*
+
+O Prometheus e o Grafana são provisionados **automaticamente** pelo repositório [fiap-14soat-tc-fase5-iac-terraform](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform) quando o script `setup-cluster.sh` é executado. Não é necessário rodar o Docker Compose deste repositório.
+
+#### ⚙️ Pré-requisitos
+
+- Docker Desktop 4.25+ com Kubernetes habilitado
+- `kubectl` configurado com contexto `docker-desktop`
+- `helm` 3.x
+- `terraform` 1.x
+
+#### ⚙️ Passos
+
+```bash
+# 1. Clone o repositório de infraestrutura
+git clone https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform
+cd fiap-14soat-tc-fase5-iac-terraform
+
+# 2. Configure as variáveis
+cp infra/terraform.tfvars.example infra/terraform.tfvars
+# edite infra/terraform.tfvars e defina jwt_secret
+
+# 3. Execute o script de provisionamento
+bash scripts/setup-cluster.sh
+```
+
+O script provisiona automaticamente:
+- Prometheus (Helm) com scrape dos 5 microserviços e regras de alerta
+- Grafana (Helm) com datasource Prometheus pré-configurado
+
+#### URLs após provisionamento K8s
+
+| Serviço | URL | Credenciais |
+|---------|-----|-------------|
+| Prometheus | http://localhost:9090 | — |
+| Prometheus Targets | http://localhost:9090/targets | — |
+| Grafana | http://localhost:3000 | admin / admin |
+
+---
+
+### 🅱️ Modo Docker Compose — Desenvolvimento sem cluster
+
+Use este modo caso não queira subir o cluster Kubernetes. Os microserviços devem estar rodando conectados à `fiap-network`.
+
+#### ⚙️ Pré-requisitos
 
 - Docker Desktop 4.25+
 - Todos os microserviços rodando conectados à `fiap-network`
 
-### ⚙️ Configuração da rede Docker compartilhada
+#### ⚙️ Configuração da rede Docker compartilhada
 
 ```bash
 docker network create fiap-network
 ```
 
-### Opção A — Subir observabilidade após os serviços *(recomendado)*
+#### Opção A — Subir observabilidade após os serviços *(recomendado)*
 
 Ordem sugerida:
 
@@ -776,13 +901,13 @@ cd fiap-14soat-tc-fase5-notification-service && docker compose up -d
 cd fiap-14soat-tc-fase5-observability && docker-start-local-dev.bat
 ```
 
-### Opção B — Apenas observabilidade (serviços externos)
+#### Opção B — Apenas observabilidade (serviços externos)
 
 ```bash
 docker compose up -d
 ```
 
-### Scripts disponíveis
+#### Scripts disponíveis
 
 | Script | Objetivo |
 |---|---|
@@ -790,7 +915,7 @@ docker compose up -d
 | `docker-start-local-dev.bat` | sobe apenas `prometheus` e `grafana` para desenvolvimento local |
 | `docker-stop-services.bat` | derruba os containers mantendo os volumes |
 
-### URLs úteis
+#### URLs úteis (Docker Compose)
 
 | Serviço | URL | Descrição |
 |---|---|---|
@@ -799,15 +924,17 @@ docker compose up -d
 | Prometheus Alertas | http://localhost:9090/alerts | Regras ativas |
 | Grafana | http://localhost:3000 | Dashboards (admin/admin) |
 
+---
+
 ### Variáveis de Ambiente
 
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `GF_SECURITY_ADMIN_USER` | `admin` | Usuário admin do Grafana |
 | `GF_SECURITY_ADMIN_PASSWORD` | `admin` | Senha admin do Grafana |
-| `NEW_RELIC_LICENSE_KEY` | `(arquivo .env)` | License key do New Relic |
+| `NEW_RELIC_LICENSE_KEY` | `(arquivo .env)` | License key do New Relic (opcional) |
 
-### Persistência
+### Persistência (Docker Compose)
 
 Os dados ficam salvos em volumes Docker:
 
@@ -826,12 +953,12 @@ docker compose down -v
 
 | Ordem | Repositório | Descrição               |
 |---|---|-------------------------|
-| 1 | [fiap-14soat-tc-fase5-iac-terraform](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform) | Banco de dados, RabbitMQ — infraestrutura AWS |
+| 1 | [fiap-14soat-tc-fase5-iac-terraform](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-iac-terraform) | Infraestrutura K8s local — banco de dados, RabbitMQ, Prometheus, Grafana |
 | 2 | [fiap-14soat-tc-fase5-auth](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-auth) | Login Authorizer            |
 | 3 | [fiap-14soat-tc-fase5-video-upload-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-video-upload-service) | Upload + RabbitMQ publisher |
 | 4 | [fiap-14soat-tc-fase5-video-processing-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-video-processing-service) | Processa vídeo, extrai frames, gera ZIP |
 | 5 | [fiap-14soat-tc-fase5-video-status-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-video-status-service) | Status e metadados dos vídeos por usuário |
-| 6 | [fiap-14soat-tc-fase5-video-download-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-video-download-service) | Download do ZIP via presigned URL |
+| 6 | [fiap-14soat-tc-fase5-video-download-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-video-download-service) | Download do ZIP via URL local |
 | 7 | [fiap-14soat-tc-fase5-notification-service](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-notification-service) | Notificação por e-mail em caso de erro/conclusão |
 | 8 | [fiap-14soat-tc-fase5-observability](https://github.com/jonasfschuh/fiap-14soat-tc-fase5-observability) | Prometheus + Grafana — dashboards e alertas |
 

@@ -45,7 +45,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "up{job=\"video-processing-service\"}",
           "legendFormat": "Status",
           "refId": "A"
@@ -79,7 +79,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(rate(http_server_requests_seconds_count{job=\"video-processing-service\"}[1m]))",
           "legendFormat": "Req/s",
           "refId": "A"
@@ -101,7 +101,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(http_server_requests_seconds_count{job=\"video-processing-service\"}[1m])",
           "legendFormat": "{{ method }} {{ uri }} {{ status }}",
           "refId": "A"
@@ -123,7 +123,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{job=\"video-processing-service\"}[5m]))",
           "legendFormat": "p95",
           "refId": "A"
@@ -145,7 +145,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "jvm_memory_used_bytes{job=\"video-processing-service\",area=\"heap\"}",
           "legendFormat": "{{ id }}",
           "refId": "A"
@@ -167,7 +167,7 @@
       },
       "targets": [
         {
-          "datasource": "Prometheus",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "jvm_threads_live_threads{job=\"video-processing-service\"}",
           "legendFormat": "threads",
           "refId": "A"
