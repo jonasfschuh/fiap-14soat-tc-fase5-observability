@@ -46,7 +46,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"video-upload-service\"}",
+          "expr": "up{app=\"video-upload-api\"}",
           "legendFormat": "Status",
           "refId": "A"
         }
@@ -80,7 +80,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"video-upload-service\"}[1m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[1m]))",
           "legendFormat": "Req/s",
           "refId": "A"
         }
@@ -102,7 +102,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(http_server_requests_seconds_count{job=\"video-upload-service\"}[1m])",
+          "expr": "rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[1m])",
           "legendFormat": "{{ method }} {{ uri }} {{ status }}",
           "refId": "A"
         }
@@ -124,7 +124,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{job=\"video-upload-service\"}[5m]))",
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{app=\"video-upload-api\"}[5m]))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -146,7 +146,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "jvm_memory_used_bytes{job=\"video-upload-service\",area=\"heap\"}",
+          "expr": "jvm_memory_used_bytes{app=\"video-upload-api\",area=\"heap\"}",
           "legendFormat": "{{ id }}",
           "refId": "A"
         }
@@ -168,7 +168,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "jvm_threads_live_threads{job=\"video-upload-service\"}",
+          "expr": "jvm_threads_live_threads{app=\"video-upload-api\"}",
           "legendFormat": "threads",
           "refId": "A"
         }

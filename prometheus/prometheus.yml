@@ -17,6 +17,24 @@ scrape_configs:
   # Cada job declara o target como localhost:PORT (exibido na UI do Prometheus).
   # O relabeling salva 'instance' como localhost:PORT antes de reescrever
   # __address__ para host.docker.internal:PORT (necessário dentro do container).
+  # O label 'app' segue a mesma convencao de nomes usada nos Deployments K8s
+  # (auth-api, video-upload-api, ...) para que os dashboards funcionem em
+  # ambos os modos (Docker Compose e K8s) sem alterar as queries.
+
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['localhost:8090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: 'localhost:(\d+)'
+        target_label: __address__
+        replacement: 'host.docker.internal:${1}'
+      - target_label: app
+        replacement: 'auth-api'
 
   - job_name: 'video-upload-service'
     metrics_path: '/actuator/prometheus'
@@ -30,8 +48,8 @@ scrape_configs:
         regex: 'localhost:(\d+)'
         target_label: __address__
         replacement: 'host.docker.internal:${1}'
-      - target_label: service
-        replacement: 'video-upload'
+      - target_label: app
+        replacement: 'video-upload-api'
 
   - job_name: 'video-processing-service'
     metrics_path: '/actuator/prometheus'
@@ -45,8 +63,8 @@ scrape_configs:
         regex: 'localhost:(\d+)'
         target_label: __address__
         replacement: 'host.docker.internal:${1}'
-      - target_label: service
-        replacement: 'video-processing'
+      - target_label: app
+        replacement: 'video-processing-api'
 
   - job_name: 'video-status-service'
     metrics_path: '/actuator/prometheus'
@@ -60,8 +78,8 @@ scrape_configs:
         regex: 'localhost:(\d+)'
         target_label: __address__
         replacement: 'host.docker.internal:${1}'
-      - target_label: service
-        replacement: 'video-status'
+      - target_label: app
+        replacement: 'video-status-api'
 
   - job_name: 'video-download-service'
     metrics_path: '/actuator/prometheus'
@@ -75,8 +93,8 @@ scrape_configs:
         regex: 'localhost:(\d+)'
         target_label: __address__
         replacement: 'host.docker.internal:${1}'
-      - target_label: service
-        replacement: 'video-download'
+      - target_label: app
+        replacement: 'video-download-api'
 
   - job_name: 'notification-service'
     metrics_path: '/actuator/prometheus'
@@ -90,5 +108,5 @@ scrape_configs:
         regex: 'localhost:(\d+)'
         target_label: __address__
         replacement: 'host.docker.internal:${1}'
-      - target_label: service
-        replacement: 'notification'
+      - target_label: app
+        replacement: 'notification-api'

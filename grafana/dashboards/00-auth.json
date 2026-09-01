@@ -1,9 +1,9 @@
 {
   "id": null,
-  "uid": "fiapx-status",
-  "title": "Video Status Service",
-  "description": "Dashboard do video-status-service com disponibilidade, trafego, latencia e JVM.",
-  "tags": ["fiapx", "video-status", "observability"],
+  "uid": "fiapx-auth",
+  "title": "Auth Service",
+  "description": "Dashboard do auth-service com disponibilidade, trafego, latencia e JVM.",
+  "tags": ["fiapx", "auth", "observability"],
   "style": "dark",
   "timezone": "browser",
   "refresh": "30s",
@@ -46,7 +46,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{app=\"video-status-api\"}",
+          "expr": "up{app=\"auth-api\"}",
           "legendFormat": "Status",
           "refId": "A"
         }
@@ -80,7 +80,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{app=\"video-status-api\"}[1m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{app=\"auth-api\"}[1m]))",
           "legendFormat": "Req/s",
           "refId": "A"
         }
@@ -102,7 +102,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(http_server_requests_seconds_count{app=\"video-status-api\"}[1m])",
+          "expr": "rate(http_server_requests_seconds_count{app=\"auth-api\"}[1m])",
           "legendFormat": "{{ method }} {{ uri }} {{ status }}",
           "refId": "A"
         }
@@ -124,7 +124,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{app=\"video-status-api\"}[5m]))",
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{app=\"auth-api\"}[5m]))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -146,7 +146,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "jvm_memory_used_bytes{app=\"video-status-api\",area=\"heap\"}",
+          "expr": "jvm_memory_used_bytes{app=\"auth-api\",area=\"heap\"}",
           "legendFormat": "{{ id }}",
           "refId": "A"
         }
@@ -168,7 +168,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "jvm_threads_live_threads{app=\"video-status-api\"}",
+          "expr": "jvm_threads_live_threads{app=\"auth-api\"}",
           "legendFormat": "threads",
           "refId": "A"
         }

@@ -12,8 +12,8 @@
   "time": { "from": "now-1h", "to": "now" },
   "panels": [
     {
-      "id": 1,
-      "title": "video-upload",
+      "id": 0,
+      "title": "auth",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
       "options": {
@@ -46,15 +46,15 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"video-upload-service\"}",
-          "legendFormat": "video-upload",
+          "expr": "up{app=\"auth-api\"}",
+          "legendFormat": "auth",
           "refId": "A"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "video-processing",
+      "id": 1,
+      "title": "video-upload",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
       "options": {
@@ -87,15 +87,15 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"video-processing-service\"}",
-          "legendFormat": "video-processing",
+          "expr": "up{app=\"video-upload-api\"}",
+          "legendFormat": "video-upload",
           "refId": "A"
         }
       ]
     },
     {
-      "id": 3,
-      "title": "video-status",
+      "id": 2,
+      "title": "video-processing",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
       "options": {
@@ -128,15 +128,15 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"video-status-service\"}",
-          "legendFormat": "video-status",
+          "expr": "up{app=\"video-processing-api\"}",
+          "legendFormat": "video-processing",
           "refId": "A"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "video-download",
+      "id": 3,
+      "title": "video-status",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
       "options": {
@@ -169,15 +169,15 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"video-download-service\"}",
-          "legendFormat": "video-download",
+          "expr": "up{app=\"video-status-api\"}",
+          "legendFormat": "video-status",
           "refId": "A"
         }
       ]
     },
     {
-      "id": 5,
-      "title": "notification",
+      "id": 4,
+      "title": "video-download",
       "type": "stat",
       "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
       "options": {
@@ -210,7 +210,48 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "up{job=\"notification-service\"}",
+          "expr": "up{app=\"video-download-api\"}",
+          "legendFormat": "video-download",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "notification",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "DOWN", "color": "red" },
+                "1": { "text": "UP", "color": "green" }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "up{app=\"notification-api\"}",
           "legendFormat": "notification",
           "refId": "A"
         }
@@ -232,8 +273,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (job) (rate(http_server_requests_seconds_count[1m]))",
-          "legendFormat": "{{ job }}",
+          "expr": "sum by (app) (rate(http_server_requests_seconds_count[1m]))",
+          "legendFormat": "{{ app }}",
           "refId": "A"
         }
       ]
@@ -254,8 +295,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (job) (rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) / sum by (job) (rate(http_server_requests_seconds_count[5m])) * 100",
-          "legendFormat": "{{ job }}",
+          "expr": "sum by (app) (rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) / sum by (app) (rate(http_server_requests_seconds_count[5m])) * 100",
+          "legendFormat": "{{ app }}",
           "refId": "A"
         }
       ]
@@ -277,7 +318,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "jvm_memory_used_bytes{area=\"heap\"}",
-          "legendFormat": "{{ job }}",
+          "legendFormat": "{{ app }}",
           "refId": "A"
         }
       ]
