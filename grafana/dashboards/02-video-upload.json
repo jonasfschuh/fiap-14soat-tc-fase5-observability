@@ -80,7 +80,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[1m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[5m]))",
           "legendFormat": "Req/s",
           "refId": "A"
         }
@@ -102,7 +102,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[1m])",
+          "expr": "rate(http_server_requests_seconds_count{app=\"video-upload-api\"}[5m])",
           "legendFormat": "{{ method }} {{ uri }} {{ status }}",
           "refId": "A"
         }
